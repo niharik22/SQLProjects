@@ -1,6 +1,6 @@
 # Census Project SQL Queries
 
-This Markdown file provides a brief description of the SQL queries used in the Census Project.
+Brief description of the SQL queries used in the Census Project.
 
 ## Data Selection
 
