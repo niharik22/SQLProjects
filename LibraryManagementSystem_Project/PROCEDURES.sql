@@ -111,26 +111,59 @@ END //
 DELIMITER ;
 
 -- Remove_Book: Removes a book and its associated records from the library.
+
+DROP PROCEDURE IF EXISTS Remove_Book;
 DELIMITER //
-CREATE PROCEDURE Remove_Book(IN book_id INT)
+CREATE PROCEDURE Remove_Book(
+    IN book_id INT,
+    OUT Result VARCHAR(255)
+)
 BEGIN
-    DELETE FROM Writes WHERE BookID = book_id;
-    DELETE FROM Books WHERE BookID = book_id;
+    -- Use the BOOK_EXISTS function to check if the book exists
+    IF BOOK_EXISTS(book_id) = 1 THEN
+        -- Delete entries from the Writes table
+        DELETE FROM Writes WHERE BookID = book_id;
+
+        -- Delete the book from the Books table
+        DELETE FROM Books WHERE BookID = book_id;
+
+        SET Result = CONCAT('Book with BookID ', book_id, ' has been successfully removed.');
+    ELSE
+        -- Book does not exist
+        SET Result = CONCAT('No book found with BookID ', book_id);
+    END IF;
 END //
 DELIMITER ;
 
 -- Update_Book_Details: Updates the details of a book in the library.
+
+DROP PROCEDURE IF EXISTS Update_Book_Details;
 DELIMITER //
 CREATE PROCEDURE Update_Book_Details(
     IN book_id INT,
     IN new_title VARCHAR(120),
     IN new_year INT,
     IN new_cost DECIMAL(8,2),
-    IN new_subject VARCHAR(120)
+    IN new_subject VARCHAR(120),
+    OUT Result VARCHAR(255)
 )
 BEGIN
-    UPDATE Books SET Title = new_title, YearPublished = new_year, Cost = new_cost, Subject = new_subject WHERE BookID = book_id;
+    -- Use the BOOK_EXISTS function to check if the book exists
+    IF BOOK_EXISTS(book_id) = 1 THEN
+        -- Update book details
+        UPDATE Books 
+        SET Title = new_title, 
+            YearPublished = new_year, 
+            Cost = new_cost, 
+            Subject = new_subject 
+        WHERE BookID = book_id;
+        SET Result = CONCAT('Book details updated successfully for BookID ', book_id);
+    ELSE
+        -- Book does not exist
+        SET Result = CONCAT('No book found with BookID ', book_id);
+    END IF;
 END //
+
 DELIMITER ;
 
 -- Register_Patron: Registers a new patron in the library, with validation for patron type.
