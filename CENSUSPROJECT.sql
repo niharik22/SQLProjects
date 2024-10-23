@@ -1,70 +1,70 @@
 USE censusproject;
 
--- Select all data from Data1
-SELECT * FROM Data1;
+-- Select all data from DemographicIndicators
+SELECT * FROM DemographicIndicators;
 
--- Select all data from Data2
-SELECT * FROM Data2;
+-- Select all data from GeographicPopulation
+SELECT * FROM GeographicPopulation;
 
--- 1. Number of Districts in data1 and data2
-SELECT COUNT(d1.District) AS 'Total Districts' FROM data1 d1;
-SELECT COUNT(d2.District) AS 'Total Districts' FROM data2 d2;
+-- 1. Number of Districts in DemographicIndicators and GeographicPopulation
+SELECT COUNT(di.District) AS 'Total Districts' FROM DemographicIndicators di;
+SELECT COUNT(gp.District) AS 'Total Districts' FROM GeographicPopulation gp;
 
--- 2. Get data for Andhra Pradesh and Karnataka from data1 and Data2
-SELECT * FROM data1 d1 WHERE d1.State IN ('Andhra Pradesh', 'Karnataka');
-SELECT * FROM data1 d2 WHERE d2.State IN ('Andhra Pradesh', 'Karnataka');
+-- 2. Get data for Andhra Pradesh and Karnataka from DemographicIndicators and GeographicPopulation
+SELECT * FROM DemographicIndicators di WHERE di.State IN ('Andhra Pradesh', 'Karnataka');
+SELECT * FROM DemographicIndicators gp WHERE gp.State IN ('Andhra Pradesh', 'Karnataka');
 
 -- 3. Get the total population of India
-SELECT ROUND(SUM(d2.Population), 0) AS 'Total Population of India' FROM data2 d2;
+SELECT ROUND(SUM(gp.Population), 0) AS 'Total Population of India' FROM GeographicPopulation gp;
 
 -- 4. Average growth of the country
-SELECT ROUND(AVG(d1.Growth) * 100, 2) AS "Avg % Growth of the Country" FROM data1 d1;
+SELECT ROUND(AVG(di.Growth) * 100, 2) AS "Avg % Growth of the Country" FROM DemographicIndicators di;
 
 -- 5. Average growth of each state
-SELECT d1.State, ROUND(AVG(d1.Growth) * 100, 2) AS "Avg % Growth of the State"
-FROM data1 d1
-GROUP BY d1.State;
+SELECT di.State, ROUND(AVG(di.Growth) * 100, 2) AS "Avg % Growth of the State"
+FROM DemographicIndicators di
+GROUP BY di.State;
 
 -- 6. Average sex ratio per state
-SELECT d1.State, ROUND(AVG(d1.Sex_Ratio), 0) AS Avg_Sex_Ratio
-FROM data1 d1
-GROUP BY d1.State
+SELECT di.State, ROUND(AVG(di.Sex_Ratio), 0) AS Avg_Sex_Ratio
+FROM DemographicIndicators di
+GROUP BY di.State
 ORDER BY Avg_Sex_Ratio;
 
 -- 7. States with Average Literacy Rate greater than 90
-SELECT d1.State, ROUND(AVG(d1.Literacy), 0) AS Avg_Literacy_Rate
-FROM data1 d1
-GROUP BY d1.State
+SELECT di.State, ROUND(AVG(di.Literacy), 0) AS Avg_Literacy_Rate
+FROM DemographicIndicators di
+GROUP BY di.State
 HAVING Avg_Literacy_Rate > 90
 ORDER BY Avg_Literacy_Rate;
 
 -- 8. Top 3 States that have shown average growth rate
-SELECT d1.State, ROUND(AVG(d1.Growth) * 100, 2) AS Avg_Growth_Rate
-FROM data1 d1
-GROUP BY d1.State
+SELECT di.State, ROUND(AVG(di.Growth) * 100, 2) AS Avg_Growth_Rate
+FROM DemographicIndicators di
+GROUP BY di.State
 ORDER BY Avg_Growth_Rate DESC
 LIMIT 3;
 
 -- 9. Bottom 3 States showing the least sex ratio
-SELECT d1.State, ROUND(AVG(d1.Sex_Ratio), 0) AS Avg_Sex_Ratio
-FROM data1 d1
-GROUP BY d1.State
+SELECT di.State, ROUND(AVG(di.Sex_Ratio), 0) AS Avg_Sex_Ratio
+FROM DemographicIndicators di
+GROUP BY di.State
 ORDER BY Avg_Sex_Ratio
 LIMIT 3;
 
 -- 10. Get States with Top 3 and Bottom 3 States
 (
-  SELECT d1.State, ROUND(AVG(d1.Literacy), 2) AS Avg_Literacy_Rate
-  FROM data1 AS d1
-  GROUP BY d1.State
+  SELECT di.State, ROUND(AVG(di.Literacy), 2) AS Avg_Literacy_Rate
+  FROM DemographicIndicators AS di
+  GROUP BY di.State
   ORDER BY Avg_Literacy_Rate DESC
   LIMIT 3
 )
 UNION
 (
-  SELECT d1.State, ROUND(AVG(d1.Literacy), 2) AS Avg_Literacy_Rate
-  FROM data1 AS d1
-  GROUP BY d1.State
+  SELECT di.State, ROUND(AVG(di.Literacy), 2) AS Avg_Literacy_Rate
+  FROM DemographicIndicators AS di
+  GROUP BY di.State
   ORDER BY Avg_Literacy_Rate ASC
   LIMIT 3
 )
@@ -78,9 +78,9 @@ CREATE TEMPORARY TABLE top_literacy_states (
 );
 
 INSERT INTO top_literacy_states (state, literacy_rate)
-SELECT d1.State, ROUND(AVG(d1.Literacy), 2) AS Avg_Literacy_Rate
-FROM data1 AS d1
-GROUP BY d1.State
+SELECT di.State, ROUND(AVG(di.Literacy), 2) AS Avg_Literacy_Rate
+FROM DemographicIndicators AS di
+GROUP BY di.State
 ORDER BY Avg_Literacy_Rate DESC
 LIMIT 3;
 
@@ -91,9 +91,9 @@ CREATE TEMPORARY TABLE bottom_literacy_states (
 );
 
 INSERT INTO bottom_literacy_states (state, literacy_rate)
-SELECT d1.State, ROUND(AVG(d1.Literacy), 2) AS Avg_Literacy_Rate
-FROM data1 AS d1
-GROUP BY d1.State
+SELECT di.State, ROUND(AVG(di.Literacy), 2) AS Avg_Literacy_Rate
+FROM DemographicIndicators AS di
+GROUP BY di.State
 ORDER BY Avg_Literacy_Rate ASC
 LIMIT 3;
 
@@ -101,20 +101,20 @@ SELECT * FROM bottom_literacy_states;
 SELECT * FROM top_literacy_states;
 
 -- 12. State Starting with letter A and ending with H
-SELECT DISTINCT(state) FROM data1
+SELECT DISTINCT(state) FROM DemographicIndicators
 WHERE state LIKE "A%" AND state LIKE "%H";
 
 -- 13. Get Number of males and females in each district - (sex_ratio = no of females/1000 males)
 SELECT
-  d2.District,
-  d2.State,
-  d2.Population,
-  ROUND(d2.Population * (d1.sex_ratio / 1000), 0) AS female_population,
-  ROUND(d2.Population * (1 - (d1.sex_ratio / 1000)), 0) AS male_population
-FROM data1 d1
-JOIN data2 d2
+  gp.District,
+  gp.State,
+  gp.Population,
+  ROUND(gp.Population * (di.sex_ratio / 1000), 0) AS female_population,
+  ROUND(gp.Population * (1 - (di.sex_ratio / 1000)), 0) AS male_population
+FROM DemographicIndicators di
+JOIN GeographicPopulation gp
 USING (District)
-ORDER BY d2.State;
+ORDER BY gp.State;
 
 -- 14. Get Number of males and females in each state
 SELECT
@@ -125,15 +125,15 @@ SELECT
   SUM(d_female_population) / SUM(d_male_population) "Ratio"
 FROM (
   SELECT
-    d2.District AS dis,
-    d2.State AS state,
-    d2.Population AS d_pop,
-    ROUND(d2.Population * (d1.sex_ratio / 1000), 0) AS d_female_population,
-    ROUND(d2.Population * (1 - (d1.sex_ratio / 1000)), 0) AS d_male_population
-  FROM data1 d1
-  JOIN data2 d2
+    gp.District AS dis,
+    gp.State AS state,
+    gp.Population AS d_pop,
+    ROUND(gp.Population * (di.sex_ratio / 1000), 0) AS d_female_population,
+    ROUND(gp.Population * (1 - (di.sex_ratio / 1000)), 0) AS d_male_population
+  FROM DemographicIndicators di
+  JOIN GeographicPopulation gp
   USING (District)
-  ORDER BY d2.State
+  ORDER BY gp.State
 ) AS district_stats
 GROUP BY district_stats.State
 ORDER BY district_stats.State;
@@ -146,15 +146,15 @@ SELECT
   ROUND(SUM(D.Literates) / SUM(D.Population), 2) "State Literacy Rate"
 FROM (
   SELECT
-    D1.State AS State,
-    D2.Population AS Population,
-    ROUND(((D1.Literacy / 100) * D2.Population), 0) AS Literates
-  FROM DATA1 D1
-  JOIN DATA2 D2
+    di.State AS State,
+    gp.Population AS Population,
+    ROUND(((di.Literacy / 100) * gp.Population), 0) AS Literates
+  FROM DemographicIndicators di
+  JOIN GeographicPopulation gp
   USING (DISTRICT)
 ) AS D
 GROUP BY D.STATE
-ORDER BY D2.State;
+ORDER BY gp.State;
 
 -- 16. Get the population in the previous census State wise
 SELECT
@@ -163,15 +163,15 @@ SELECT
   SUM(D.d_past_pop) "Past State Population"
 FROM (
   SELECT
-    D2.State,
-    D2.Population AS d_pres_pop,
-    ROUND(D2.Population / (D1.Growth + 1), 0) d_past_pop
-  FROM DATA1 D1
-  JOIN DATA2 D2
+    gp.State,
+    gp.Population AS d_pres_pop,
+    ROUND(gp.Population / (di.Growth + 1), 0) d_past_pop
+  FROM DemographicIndicators di
+  JOIN GeographicPopulation gp
   USING (DISTRICT)
 ) AS D
-GROUP BY D2.State
-ORDER BY D2.State;
+GROUP BY gp.State
+ORDER BY gp.State;
 
 -- 17. Change in number of persons per unit Area (per square kilometer)
 SELECT
@@ -187,14 +187,14 @@ FROM (
     SUM(d_area) state_area
   FROM (
     SELECT
-      D2.State,
-      D2.Population AS d_pres_pop,
-      ROUND(D2.Population / (D1.Growth + 1), 0) d_past_pop,
-      D2.Area_km2 AS d_area
-    FROM DATA1 D1
-    JOIN DATA2 D2
+      gp.State,
+      gp.Population AS d_pres_pop,
+      ROUND(gp.Population / (di.Growth + 1), 0) d_past_pop,
+      gp.Area_km2 AS d_area
+    FROM DemographicIndicators di
+    JOIN GeographicPopulation gp
     USING (DISTRICT)
   ) AS D
-  GROUP BY D2.State
+  GROUP BY gp.State
 ) AS state_stats
 ORDER BY state_stats.State;
